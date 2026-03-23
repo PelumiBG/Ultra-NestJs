@@ -1,26 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import { Injectable } from '@nestjs/common'; 
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { Message } from './schema/message.schema';
+import { FilterByInclude } from '@nestjs/core';
 
 @Injectable()
-export class MessageService {
-  create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+export class MessagesService {
+  constructor(
+    @InjectModel(Message.name) private messageModel: Model<Message>,
+  ) {}
+
+  async createMessage(senderId: string, receiverId: string, content: string) {
+    const message = new this.messageModel({
+      content,
+      senderId: new Types.ObjectId(senderId),
+      receiverId: new Types.ObjectId(receiverId),
+    });
+
+    await message.save();
+
+    return {
+      message: 'Message sent successfully',
+      data: message,
+    };
   }
 
-  findAll() {
-    return `This action returns all message`;
-  }
+  async getMessages(senderId: string, receiverId: string): Promise<Message[]> {
+    const $senderId = new Types.ObjectId(senderId);
+    const $receiverId = new Types.ObjectId(receiverId);
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
-  }
-
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+    return this.messageModel
+      .find({
+        $or: [
+          { senderId: $senderId, receiverId: $receiverId },
+          { senderId: $receiverId, receiverId: $senderId },
+        ],
+      } as any)
+      .populate('senderId', 'username email')
+      .populate('receiverId', 'username email')
+      .sort({ createdAt: 1 });
   }
 }

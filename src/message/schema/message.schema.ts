@@ -4,17 +4,20 @@ import mongoose, { Document, Types } from 'mongoose';
 @Schema({ timestamps: true})
 
 export class Message extends Document {
-    @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: 'user'})
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User'})
     userId: string;
 
-    @Prop({ required: true, trim: true})
-    sender: string;
+    @Prop()
+    senderId: mongoose.Schema.Types.ObjectId
+
+    @Prop()
+    receiverId: mongoose.Schema.Types.ObjectId
 
     @Prop({ required: true, trim: true})
-    receiver: string
+    content: string
 
-    @Prop({ required: true, trin: true})
-    text: string
+    @Prop({ default: false})
+    isRead: boolean
 }
 
 export const messageSchema = SchemaFactory.createForClass(Message)

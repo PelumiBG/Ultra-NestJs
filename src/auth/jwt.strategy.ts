@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production',
+      secretOrKey: process.env.JWT_SECRET || '123456789',
     });
   }
 
@@ -21,12 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userModel.findById(payload.sub);
     
     if (!user) {
-      throw new UnauthorizedException('Invalid or inactive vendor');
+      throw new UnauthorizedException('Invalid or inactive User');
     }
 
     return {
-      userId: payload.sub,
-      email: payload.email,
+      userId: user._id,
+      email: user.email,
     };
   }
 }

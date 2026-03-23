@@ -9,12 +9,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true}),
 
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGO_URI'),
+        ssl: true,
+        tlsAllowInvalidCertificates: true,
       }),
       inject: [ConfigService],
     }),
@@ -22,6 +24,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     UsersModule,
     MessageModule,
     AuthModule,
+    
   ],
   controllers: [AppController], 
   providers: [AppService],
